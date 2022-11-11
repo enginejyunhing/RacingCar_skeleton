@@ -36,10 +36,9 @@ void OnDataSent(const uint8_t *macAddress, esp_now_send_status_t status) {
 void setup() {
     Serial.begin(115200); // set serial monitor channel to 115200
     pinMode(VRy, INPUT); // define VRy as input 
-    // define LEFT as input 
-    // IT'S TIME TO TRY IT YOURSELF!!! 
-    // define RIGHT as input
-    // IT'S TIME TO TRY IT YOURSELF!!! 
+    pinMode(LEFT, INPUT); // define LEFT as input    
+    pinMode(RIGHT, INPUT); // define RIGHT as input
+    
     WiFi.mode(WIFI_STA);
     if (esp_now_init() != ESP_OK) {
         Serial.println("Error initializing ESP-NOW, Please Restart board.");
@@ -69,8 +68,7 @@ void setup() {
 void loop() {
     int x = 0; // initalize direction as 0 (center)
     int l = digitalRead(LEFT); // read the left button signal to the variabel l (high  = pressed , low = not being pressed)
-    // read the right button signal to the variable r (high  = pressed , low = not being pressed)
-    // IT'S TIME TO TRY IT YOURSELF!!! 
+    int r = digitalRead(RIGHT);
     int y = map(analogRead(VRy) - defaultValue, 0 - defaultValue, 4098 - defaultValue, -MOTOR_MAX_SPEED, MOTOR_MAX_SPEED);
     // analogRead(VRy) [input] - 1975[the value when at rest]
     // the range of input is from -1960 to 2160
@@ -81,15 +79,11 @@ void loop() {
     // the speed under MOTOR_MIN_SPEED will not be recognized at a formal motion
     if (abs(y) < MOTOR_MIN_SPEED)
         y = 0;
-    // Turn LEFT (if left button == HIGH and right button == LOW, then x == -1)
-    // IT'S TIME TO TRY IT YOURSELF!!! 
-    // Turn RIGHT (if left button == LOW and right button == HIGH, then x == 1)
-    // IT'S TIME TO TRY IT YOURSELF!!! 
+    if (l == HIGH && r == LOW) // Turn LEFT (if left button == HIGH and right button == LOW, then x == -1)
+        x = -1; 
+    if (l == LOW && r == HIGH) // Turn RIGHT (if left button == LOW and right button == HIGH, then x == 1)
+        x = 1;
 
-    // Serial print x and y
-    Serial.printf("X-direction: %d, Y-direction: %d\n", x, y);
-
-    /* send data DELETE THIS LINE TO SEND DATA
     carData sendData;
     sendData.x = x; 
     sendData.y = y;
@@ -97,5 +91,4 @@ void loop() {
 
     // send sendData (sendData.x and sendData.y) to the target(car)
     esp_err_t result = esp_now_send(sendTargetMAC, (uint8_t *)&sendData, sizeof(sendData)); 
-    DELETE THIS LINE TO SEND DATA */ 
 }
