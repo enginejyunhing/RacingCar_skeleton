@@ -6,7 +6,7 @@
 #define MOTOR_BACK_WHEEL_PWM 5		  // PWMB
 #define MOTOR_BACK_WHEEL_A 16		  // B1A
 #define MOTOR_BACK_WHEEL_B 17		  // B1B
-#define MOTOR_FRONT_WHEEL_GO_PWM 25	  // PWMA
+#define MOTOR_FRONT_WHEEL_GO_PWM 25   // PWMA
 #define MOTOR_FRONT_WHEEL_GO_LEFT 26  // A1A
 #define MOTOR_FRONT_WHEEL_GO_RIGHT 27 // A1B
 #define INF_LOOP for (;;);
@@ -20,20 +20,14 @@ void OnDataRecv(const uint8_t *macAddress, const uint8_t *incomingData, int len)
 	// Get data
 	carData receiveData;
 	memcpy(&receiveData, incomingData, sizeof(receiveData));
-	// Adjust motor
-	frontWheel(receiveData.x);
-	backWheel(receiveData.y);
-	Serial.printf("X-direction: %d, Y-direction: %d\n", receiveData.x, receiveData.y);
-}
-
-void frontWheel(int x) {
-	// Set Direction (-1: Left, 0: Straight, 1: Right)
+	// Adjust front motor ------------------------------------------------------------------
+  // Set Direction (-1: Left, 0: Straight, 1: Right)
 	// Motor A: Forward, Motor B: Backwards
-	if (x == -1) {
+	if (receiveData.x == -1) {
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_PWM, HIGH);
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_LEFT, HIGH);
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_RIGHT, LOW);
-	} else if (x == 1) {
+	} else if (receiveData.x == 1) {
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_PWM, HIGH);
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_LEFT, LOW);
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_RIGHT, HIGH);
@@ -42,24 +36,24 @@ void frontWheel(int x) {
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_LEFT, LOW);
 		digitalWrite(MOTOR_FRONT_WHEEL_GO_RIGHT, LOW);
 	}
-}
 
-void backWheel(int y) {
+  // Adjust back motor ------------------------------------------------------------------
 	// Set Direction (-1: Backwards, 0: Stop, 1: Forward)
 	// Motor A: Forward Speed, Motor B: Backwards Speed
-	if (y > 0) {
-		analogWrite(MOTOR_BACK_WHEEL_PWM, abs(y));
-		digitalWrite(MOTOR_BACK_WHEEL_A, 1);
-		digitalWrite(MOTOR_BACK_WHEEL_B, 0);
-	} else if (y < 0) {
-		analogWrite(MOTOR_BACK_WHEEL_PWM, abs(y));
-		digitalWrite(MOTOR_BACK_WHEEL_A, 0);
-		digitalWrite(MOTOR_BACK_WHEEL_B, 1);
+	if (receiveData.y > 0) {
+		analogWrite(MOTOR_BACK_WHEEL_PWM, abs(receiveData.y));
+		digitalWrite(MOTOR_BACK_WHEEL_A, HIGH);
+		digitalWrite(MOTOR_BACK_WHEEL_B, LOW);
+	} else if (receiveData.y < 0) {
+		analogWrite(MOTOR_BACK_WHEEL_PWM, abs(receiveData.y));
+		digitalWrite(MOTOR_BACK_WHEEL_A, LOW);
+		digitalWrite(MOTOR_BACK_WHEEL_B, HIGH);
 	} else{
 		analogWrite(MOTOR_BACK_WHEEL_PWM, 0);
-		digitalWrite(MOTOR_BACK_WHEEL_A, 0);
-		digitalWrite(MOTOR_BACK_WHEEL_B, 0);
+		digitalWrite(MOTOR_BACK_WHEEL_A, LOW);
+		digitalWrite(MOTOR_BACK_WHEEL_B, LOW);
 	}
+	Serial.printf("X-direction: %d, Y-direction: %d\n", receiveData.x, receiveData.y);
 }
 
 void setup() {
